@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chore Quest</title>
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{--page:#5b4e3a;--panel:#d3c29a;--cell:#e4d7b6;--edge:#2c2316;--ink:#2b2110;--hi:#7a3d00;--bad:#a80f0f;--good:#1b6b1b;--btn:#5d5444;--btnink:#ff981f;--title:#ffd400;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--page:#26221b;--panel:#3e3529;--cell:#332c22;--edge:#120f0a;--ink:#e6d9b8;--hi:#ff981f;--bad:#ff6b5a;--good:#5fdc5f}}
+:root[data-theme="dark"]{--page:#26221b;--panel:#3e3529;--cell:#332c22;--edge:#120f0a;--ink:#e6d9b8;--hi:#ff981f;--bad:#ff6b5a;--good:#5fdc5f}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font:21px/1.15 'VT323','Courier New',monospace}
+.wrap{max-width:1000px;margin:0 auto;padding:12px}
+h1{margin:4px 0 10px;color:var(--title);font-size:42px;font-weight:400;text-shadow:2px 2px 0 #000}
+h2{margin:0 0 8px;color:var(--hi);font-size:26px;font-weight:400}
+.panel{background:var(--panel);border:3px solid var(--edge);box-shadow:inset 0 0 0 2px rgba(255,255,255,.18),inset -2px -2px 0 rgba(0,0,0,.25);padding:10px;margin-bottom:12px}
+.bar select{min-width:0;max-width:100%}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.grow{flex:1}
+.btn{font:inherit;background:var(--btn);color:var(--btnink);border:2px solid var(--edge);padding:7px 14px;text-shadow:1px 1px 0 #000;cursor:pointer;box-shadow:inset 1px 1px 0 rgba(255,255,255,.3),inset -1px -1px 0 rgba(0,0,0,.5)}
+.btn.on{color:var(--title);filter:brightness(.7)}
+.btn:active{filter:brightness(.8)}
+input,select{font:inherit;background:var(--cell);color:var(--ink);border:2px solid var(--edge);padding:5px 8px;max-width:100%}
+label{display:grid;gap:2px;min-width:0}
+label select,label input:not([type=date]){width:100%;min-width:0;text-overflow:ellipsis}
+body{overflow-wrap:anywhere}
+label.in{display:flex;align-items:center;gap:6px}
+.bar>label.in{flex:0 0 auto;white-space:nowrap;overflow-wrap:normal}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr));gap:10px;align-items:end}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;background:var(--edge);border:2px solid var(--edge)}
+.scroll{overflow-x:auto}
+.month{min-width:640px}
+.dow{background:var(--btn);color:var(--btnink);text-align:center;text-shadow:1px 1px 0 #000}
+.day{background:var(--cell);min-height:92px;padding:3px;min-width:0;overflow:hidden}
+.week .day{min-height:220px}
+.day.today{outline:3px solid var(--title);outline-offset:-3px}
+.day.out{opacity:.45}
+.dn{color:var(--hi)}
+.chip{display:block;margin-top:2px;padding:0 4px;border-left:6px solid var(--c);background:rgba(0,0,0,.13);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:18px}
+.week .chip{white-space:normal}
+.chip small{opacity:.75}
+.chip.done{text-decoration:line-through;opacity:.6}
+.chip.over{color:var(--bad);font-weight:bold;background:repeating-linear-gradient(135deg,rgba(168,15,15,.3) 0 6px,rgba(0,0,0,.08) 6px 12px)}
+.sym{color:var(--c);text-shadow:1px 0 #000,-1px 0 #000,0 1px #000,0 -1px #000}
+.chip .sym{margin-right:3px}
+.more{opacity:.7;font-size:17px}
+@media(max-width:700px){.week{grid-template-columns:1fr}.week .day{min-height:0}}
+.card{background:var(--cell);border:2px solid var(--edge);padding:8px;margin-bottom:8px;display:grid;gap:3px}
+.top{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.name{font-size:26px;color:var(--hi)}
+.badge{padding:0 6px;background:var(--c);color:#000;border:1px solid #000}
+.meta{display:flex;flex-wrap:wrap;gap:4px 18px}
+.bad{color:var(--bad)}.good{color:var(--good)}
+details summary{cursor:pointer;color:var(--hi)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:10px}
+.legend span:before{content:"";display:inline-block;width:12px;height:12px;background:var(--c);border:1px solid #000;margin-right:5px}
+.empty{padding:16px;text-align:center}
+.day[data-d]{cursor:pointer}.day[data-d]:hover{filter:brightness(1.07)}
+.skill{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center}
+.lvl{font-size:42px;color:var(--title);text-shadow:2px 2px 0 #000;line-height:1}
+.xpbar{height:16px;background:#000;border:2px solid var(--edge);margin-top:3px}
+.xpbar i{display:block;height:100%;background:#2fb52f;box-shadow:inset 0 -4px 0 rgba(0,0,0,.25)}
+.toast{background:#000;color:var(--title);border:2px solid var(--edge);padding:6px 10px;margin-bottom:10px;text-shadow:1px 1px 0 #000}
+.sect h3{margin:10px 0 4px;font-size:25px;font-weight:400;color:var(--hi)}
+.dayrow{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;background:var(--cell);border:2px solid var(--edge);padding:6px 8px;margin-bottom:6px}
+.dayrow.over{border-color:var(--bad);border-left-width:10px}
+.pbar{display:inline-block;width:90px;height:12px;background:#000;border:2px solid var(--edge)}
+.pbar i{display:block;height:100%;background:#2fb52f}
+.chip.part{border-left-style:dashed}
+.ps{min-width:0;max-width:100%}
+a.btn{display:inline-block;text-decoration:none}
+details summary{padding:4px 0}
+.dayrow .btn,.card .btn{padding:5px 10px}
+#lvlup{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.65);padding:16px;overflow:hidden}
+#lvlup[hidden]{display:none}
+.lvbox{position:relative;background:var(--panel);border:4px solid var(--edge);padding:16px 20px;text-align:center;max-width:340px;animation:pop .35s ease-out}
+.lvbox .big{font-size:72px;color:var(--title);text-shadow:3px 3px 0 #000;line-height:1}
+.fw{position:absolute;width:7px;height:7px;left:var(--x);top:var(--y);background:var(--c);animation:burst 1.3s ease-out both;animation-delay:var(--dl)}
+@keyframes burst{from{transform:translate(0,0) scale(1.2);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+@media (prefers-reduced-motion:reduce){.fw{display:none}.lvbox{animation:none}}
+</style></head><body>
+<div class="wrap">
+<h1>&#9876; Chore Quest</h1>
+<div id="lvlup" hidden></div>
+<div id="toast" class="toast" hidden></div>
+<div id="skill" class="panel"></div>
+<div class="panel bar">
+  <label class="in">I did <select id="ppct"></select> of</label>
+  <select id="pick"></select>
+  <label class="in">on <input type="date" id="pdate"></label>
+</div>
+<div class="bar" style="margin-bottom:12px">
+  <button class="btn" data-v="day">Day</button>
+  <button class="btn" data-v="week">Week</button>
+  <button class="btn" data-v="month">Month</button>
+  <button class="btn" data-v="list">Chores</button>
+  <button class="btn" id="pickbtn">Pick for me</button>
+  <button class="btn" id="undobtn" hidden>Undo</button>
+</div>
+<div id="pickme" class="panel" hidden></div>
+<div id="main"></div>
+<div id="addp" class="panel" hidden>
+  <h2>Add a new chore</h2>
+  <div class="form">
+    <label>Name<input id="fn" maxlength="60" placeholder="e.g. Clean the oven"></label>
+    <label>Difficulty<select id="fd"></select></label>
+    <label>How often<select id="ff"></select></label>
+    <label id="fow" hidden>Due date<input id="fo" type="date"></label>
+    <label id="fcw" hidden>Every how many days?<input id="fc" type="number" min="1" max="3650" value="10"></label>
+    <button class="btn" id="fadd">Add chore</button>
+  </div>
+  <h2 style="margin-top:16px">Backup and restore</h2>
+  <p style="margin:0 0 8px">Your data lives only in this browser on this device. Download a backup now and then.</p>
+  <div class="bar"><button class="btn" id="bkx">Download backup</button><label class="btn" for="imp" style="cursor:pointer;display:inline-block">Restore from file</label><input type="file" id="imp" accept=".json,application/json" hidden></div>
+  <textarea id="bkt" rows="3" style="width:100%;margin-top:8px;background:var(--cell);color:var(--ink);border:2px solid var(--edge);font:inherit" placeholder="If downloads are unavailable, the backup text shows up here. To restore, paste a backup here and press the button below."></textarea>
+  <button class="btn" id="bkr" style="margin-top:6px">Restore from pasted text</button>
+</div>
+</div>
+<script>
+(()=>{
+const DAY=864e5,K='chorequest.v1';
+const D=[{n:'Easy',t:'~5 min',c:'#56B4E9',s:'&#9679;',xp:100},{n:'Medium',t:'~30 min',c:'#009E73',s:'&#9632;',xp:400},{n:'Hard',t:'~2 hours',c:'#F0E442',s:'&#9650;',xp:1500},{n:'Elite',t:'~half a day',c:'#D55E00',s:'&#9670;',xp:5000},{n:'Master',t:'a few days',c:'#CC79A7',s:'&#9733;',xp:20000}];
+const XT=[0,0];for(let l=1,a=0;l<99;l++){a+=Math.floor(l+300*Math.pow(2,l/7));XT[l+1]=Math.floor(a/4)}
+const lvl=x=>{let l=1;while(l<99&&x>=XT[l+1])l++;return l};
+const F=[[1,'Daily'],[2,'Every 2 days'],[3,'Every 3 days'],[7,'Weekly'],[14,'Every 2 weeks'],[30,'Monthly'],[90,'Every 3 months'],[182,'Every 6 months'],[365,'Yearly']];
+const $=s=>document.querySelector(s);
+const dn=d=>Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/DAY);
+const dt=n=>{const u=new Date(n*DAY);return new Date(u.getUTCFullYear(),u.getUTCMonth(),u.getUTCDate())};
+const T=dn(new Date());
+const fmt=(n,o)=>dt(n).toLocaleDateString(undefined,o||{month:'short',day:'numeric',year:'numeric'});
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const plural=(n,w)=>n+' '+w+(n===1?'':'s');
+const ago=n=>{const d=T-n;if(d<=0)return'today';if(d===1)return'yesterday';if(d<14)return d+' days ago';if(d<60)return Math.round(d/7)+' weeks ago';if(d<730)return Math.round(d/30.4)+' months ago';return Math.round(d/365)+' years ago'};
+const freqName=f=>{const m=F.find(x=>x[0]===f);return m?m[1]:'Every '+f+' days'};
+
+let chores=[],xp=0,act=[],view='day',cur=T,arm=null,raw=null,tt,p=null;
+try{raw=localStorage.getItem(K)}catch(e){}
+if(raw){try{p=JSON.parse(raw)}catch(e){}}
+if(Array.isArray(p)){chores=p;xp=chores.reduce((a,c)=>a+c.log.length*D[c.diff].xp,0)}
+else if(p&&Array.isArray(p.chores)){chores=p.chores;xp=Number(p.xp)||0;act=Array.isArray(p.act)?p.act:[]}
+if(raw===null||raw===undefined){
+  chores=[['Wash dishes',0,1],['Take out trash',0,3],['Vacuum floors',1,7],['Clean bathroom',2,7],['Wash windows',3,30]]
+    .map((c,i)=>({id:'seed'+i,name:c[0],diff:c[1],freq:c[2],added:T,log:[]}));
+  save();
+}
+const derive=a=>[...new Set(a.flatMap(c=>c.log.concat((c.part||[]).map(x=>x.d))))];
+if(!act.length)act=derive(chores);
+function save(){try{localStorage.setItem(K,JSON.stringify({chores,xp,act}))}catch(e){}}
+
+const last=c=>c.log.length?Math.max(...c.log):null;
+const isDone=c=>!!c.once&&c.log.length>0;
+const base=c=>{if(c.once)return Math.max(c.due,c.snz||0);const l=last(c),k=(c.sk||[]).length?Math.max(...c.sk):null,a=l==null?k:k==null?l:Math.max(l,k);return Math.max(a==null?c.added:a+c.freq,c.snz||0)};
+const over=c=>!isDone(c)&&base(c)<T;
+const dueOn=(c,n)=>{if(isDone(c))return false;const s=Math.max(base(c),T);return c.once?n===s:n>=s&&(n-s)%c.freq===0};
+const key=c=>isDone(c)?1e9:base(c);
+const mult=late=>Math.max(.5,1-.1*late);
+function streaks(){
+  const s=new Set(act);let run=0,d=s.has(T)?T:T-1;while(s.has(d)){run++;d--}
+  let best=0,c0=0;[...s].sort((a,b)=>a-b).forEach((n,i,a)=>{c0=i&&n===a[i-1]+1?c0+1:1;best=Math.max(best,c0)});
+  return {run,best,today:s.has(T)};
+}
+const streakLine=()=>{const k=streaks();return k.run?`<b class="good">Streak: ${plural(k.run,'day')}</b> (best ${k.best})${k.today?'':', do one chore today to keep it going'}`:`Streak: 0 days${k.best?' (best '+k.best+')':''}. Finish a chore to start one.`};
+function levelUp(L){
+  const el=$('#lvlup'),cols=['#ffd400','#ff981f','#ffffff','#56B4E9'];let h='';
+  for(let b=0;b<4;b++){const x=15+Math.random()*70,y=12+Math.random()*45;for(let i=0;i<14;i++){const a=i/14*6.283,r=60+Math.random()*50;h+=`<i class="fw" style="--x:${x}%;--y:${y}%;--dl:${b*.35}s;--dx:${Math.cos(a)*r}px;--dy:${Math.sin(a)*r}px;--c:${cols[(b+i)%4]}"></i>`}}
+  el.innerHTML=h+`<div class="lvbox"><div class="big">${L}</div><div><b>Housekeeping</b></div><div>Congratulations, you just advanced a Housekeeping level! You are now level ${L}.</div><div style="margin-top:10px"><button class="btn">Continue</button></div></div>`;
+  el.hidden=false;clearTimeout(levelUp.t);levelUp.t=setTimeout(()=>{el.hidden=true},6000);
+}
+const fq=c=>c.once?'One-time, due '+fmt(c.due,{month:'short',day:'numeric'}):freqName(c.freq);
+const ymd=n=>{const u=dt(n);return u.getFullYear()+'-'+String(u.getMonth()+1).padStart(2,'0')+'-'+String(u.getDate()).padStart(2,'0')};
+let snap=null;
+function snapshot(){snap=JSON.stringify({chores,xp,act});$('#undobtn').hidden=false}
+function undo(){if(!snap)return;const o=JSON.parse(snap);chores=o.chores;xp=o.xp;act=o.act||[];snap=null;$('#undobtn').hidden=true;save();render();toast('Undone.')}
+function pushChore(id){const c=chores.find(x=>x.id===id);if(!c)return;snapshot();c.snz=T+1;save();render();toast(esc(c.name)+' pushed to tomorrow.')}
+function skipChore(id){const c=chores.find(x=>x.id===id);if(!c||c.once)return;snapshot();(c.sk=c.sk||[]).push(T);save();render();toast(esc(c.name)+' skipped. Next due '+fmt(base(c),{month:'short',day:'numeric'})+'.')}
+const gcal=c=>{if(isDone(c))return '';const s=Math.max(base(c),T),f=n=>ymd(n).replace(/-/g,''),q={action:'TEMPLATE',text:'Chore: '+c.name,dates:f(s)+'/'+f(s+1),details:D[c.diff].n+' ('+D[c.diff].t+'), from Chore Quest'};if(!c.once)q.recur='RRULE:FREQ=DAILY;INTERVAL='+c.freq;return `<a class="btn" target="_blank" rel="noopener" href="https://calendar.google.com/calendar/render?${new URLSearchParams(q)}">Remind me</a>`};
+let pid=null;
+function pickMe(){
+  const all=chores.filter(c=>!isDone(c)&&base(c)<=T&&!c.log.includes(T)),pool=all.filter(c=>c.id!==pid).length?all.filter(c=>c.id!==pid):all;
+  if(!pool.length){pid=null;renderPick();toast('Nothing is due right now. Nice work.');return}
+  const w=pool.map(c=>(over(c)?3+Math.min(T-base(c),7):1)/(c.diff+1));
+  let r=Math.random()*w.reduce((a,b)=>a+b,0),i=0;while(i<pool.length-1&&(r-=w[i])>0)i++;
+  pid=pool[i].id;renderPick();
+}
+function renderPick(){
+  const el=$('#pickme'),c=chores.find(x=>x.id===pid);
+  if(!c||isDone(c)||base(c)>T||c.log.includes(T)){pid=null;el.hidden=true;return}
+  const d=D[c.diff];el.hidden=false;
+  el.innerHTML=`<h2>Your quest</h2><div><span class="sym" style="--c:${d.c}">${d.s}</span> <b>${esc(c.name)}</b> (${d.n}, ${d.t}, ${d.xp.toLocaleString()} xp)${over(c)?` <b class="bad">! MISSED ${plural(T-base(c),'day')}, ${Math.round(mult(T-base(c))*100)}% xp</b>`:''}</div><div>${c.diff>=3?'Too big to finish? Do just the first 10%.':'Set a 5 minute timer and just start.'}</div><div class="bar" style="margin-top:6px"><button class="btn" data-done="${c.id}">Done</button>${c.diff>=3?`<button class="btn" data-p10="${c.id}">Did 10%</button>`:''}<button class="btn" id="pickbtn2">Pick another</button></div>`;
+}
+async function saveFile(name,text){
+  try{const dl=window.claude&&await window.claude.use('downloads');if(dl){await dl.save({filename:name,data:text});toast('Backup saved.');return}}catch(e){if(e&&e.code==='declined')return}
+  $('#bkt').value=text;toast('Downloads are unavailable here. Copy the text in the backup box and keep it somewhere safe.');
+}
+function restore(txt){
+  let o;try{o=JSON.parse(txt)}catch(e){}
+  const a=Array.isArray(o)?o:o&&o.chores;
+  if(!Array.isArray(a)||!a.every(c=>c&&typeof c.name==='string'&&D[c.diff]&&Array.isArray(c.log))){toast('That does not look like a Chore Quest backup.');return}
+  snapshot();
+  chores=a.map(c=>({...c,id:String(c.id||Date.now().toString(36)+Math.random().toString(36).slice(2,6)),freq:Math.max(1,Number(c.freq)||1),added:Number(c.added)||T}));
+  xp=Array.isArray(o)?chores.reduce((t,c)=>t+c.log.length*D[c.diff].xp,0):Number(o.xp)||0;
+  act=Array.isArray(o)||!Array.isArray(o.act)?derive(chores):o.act;
+  save();render();toast('Restored '+plural(chores.length,'chore')+'. You can undo this.');
+}
+
+function pickedDay(){const v=$('#pdate').value;if(!v)return T;const p=v.split('-').map(Number);return dn(new Date(p[0],p[1]-1,p[2]))}
+function addProgress(id,day,pct){
+  const c=chores.find(x=>x.id===id);if(!c)return;
+  if(c.diff<3&&pct<100){toast('Only Elite and Master chores can be done in parts. Set the amount to 100% for '+esc(c.name)+'.');refreshPick();return}
+  if(c.log.includes(day)||isDone(c)){toast(esc(c.name)+' is already '+(isDone(c)?'complete':'logged for that day')+'.');refreshPick();return}
+  const c0=c.prog||0,add=Math.min(pct,100-c0),late=Math.max(0,day-base(c)),m=mult(late),g=Math.round(D[c.diff].xp*add/100*m),before=lvl(xp);
+  snapshot();if(!act.includes(day))act.push(day);(c.part=c.part||[]).push({d:day,p:add});xp+=g;
+  const fin=c0+add>=100;
+  if(fin){c.prog=0;c.log.push(day);c.log.sort((x,y)=>x-y)}else c.prog=c0+add;
+  save();render();
+  const after=lvl(xp);
+  toast(esc(c.name)+': '+(fin?'complete!':c.prog+'% done')+'<br>+'+g.toLocaleString()+' Housekeeping xp'+(m<1?' ('+Math.round(m*100)+'% xp, '+plural(late,'day')+' late)':''));
+  if(after>before)levelUp(after);
+}
+const markDone=(id,day)=>addProgress(id,day,100);
+function toast(h){const t=$('#toast');t.innerHTML=h;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>{t.hidden=true},5000)}
+
+function chip(c,cls,time,pp){
+  const d=D[c.diff],m=cls==='over'?T-base(c):0;
+  return `<span class="chip ${cls}" style="--c:${d.c}" title="${esc(c.name)} (${d.n}, ${d.t}, ${d.xp} xp)"><span class="sym">${d.s}</span>${cls==='done'?'&#10003; ':''}${m?'<b>!'+m+'d</b> ':''}${cls==='part'?'<b>+'+pp+'%</b> ':''}${esc(c.name)}${c.prog&&cls!=='done'&&cls!=='part'?' <small>'+c.prog+'%</small>':''}${time?` <small>${d.t}</small>`:''}</span>`;
+}
+function chipsOn(n,time){
+  const a=[],b=[],z=[];
+  chores.forEach(c=>{if(c.log.includes(n))z.push(chip(c,'done',time));else{const pp=(c.part||[]).filter(x=>x.d===n).reduce((t,x)=>t+x.p,0);if(pp)z.push(chip(c,'part',time,pp))}});
+  if(n>=T)[...chores].sort((x,y)=>base(x)-base(y)).forEach(c=>{if(dueOn(c,n)){const o=n===T&&over(c);(o?a:b).push(chip(c,o?'over':'',time))}});
+  return a.concat(b,z);
+}
+function calNav(label){
+  return `<div class="panel bar"><button class="btn" data-nav="-1">&lt; Prev</button><button class="btn" data-nav="0">Today</button><button class="btn" data-nav="1">Next &gt;</button><h2 class="grow" style="margin:0;text-align:right">${label}</h2></div>`;
+}
+const legend=()=>`<div class="legend">${D.map(d=>`<span style="--c:${d.c}">${d.s} ${d.n} (${d.t}, ${d.xp.toLocaleString()} xp)</span>`).join('')}</div>`;
+
+function weekView(){
+  const start=cur-dt(cur).getDay();
+  let cells='';
+  for(let i=0;i<7;i++){
+    const n=start+i;
+    cells+=`<div class="day${n===T?' today':''}" data-d="${n}" role="button" tabindex="0"><div class="dn">${fmt(n,{weekday:'short',month:'short',day:'numeric'})}</div>${chipsOn(n,true).join('')}</div>`;
+  }
+  const label=fmt(start,{month:'short',day:'numeric'})+' to '+fmt(start+6,{month:'short',day:'numeric',year:'numeric'});
+  return calNav(label)+`<div class="cal week">${cells}</div>`+legend();
+}
+function monthView(){
+  const cd=dt(cur),m=cd.getMonth();
+  const first=new Date(cd.getFullYear(),m,1);
+  const days=new Date(cd.getFullYear(),m+1,0).getDate();
+  const rows=Math.ceil((first.getDay()+days)/7);
+  const start=dn(first)-first.getDay();
+  let cells=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>`<div class="dow">${d}</div>`).join('');
+  for(let i=0;i<rows*7;i++){
+    const n=start+i,ch=chipsOn(n,false);
+    cells+=`<div class="day${n===T?' today':''}${dt(n).getMonth()!==m?' out':''}" data-d="${n}" role="button" tabindex="0"><div class="dn">${dt(n).getDate()}</div>${ch.slice(0,4).join('')}${ch.length>4?`<span class="more">+${ch.length-4} more</span>`:''}</div>`;
+  }
+  const label=cd.toLocaleDateString(undefined,{month:'long',year:'numeric'});
+  return calNav(label)+`<div class="scroll"><div class="cal month">${cells}</div></div>`+legend();
+}
+const progSel=c=>{if(c.diff<3)return '';const r=100-(c.prog||0);let o='<option value="">Log progress...</option>';for(let q=10;q<=r;q+=10)o+=`<option value="${q}">+${q}%${q===r?' (finish)':''}</option>`;return `<select class="ps" data-prog="${c.id}" aria-label="Log progress">${o}</select>`};
+function dayView(){
+  const n=cur,isT=n===T,ov=[],due=[],dd=[],pt=[];
+  chores.forEach(c=>{if(c.log.includes(n))dd.push(c);else{const pp=(c.part||[]).filter(x=>x.d===n).reduce((t,x)=>t+x.p,0);if(pp)pt.push([c,pp])}});
+  if(n>=T)[...chores].sort((x,y)=>base(x)-base(y)).forEach(c=>{if(dueOn(c,n))(n===T&&over(c)?ov:due).push(c)});
+  const row=(c,k)=>{const d=D[c.diff],m=T-base(c);
+    return `<div class="dayrow ${k}" style="--c:${d.c}"><span class="sym">${d.s}</span><b>${esc(c.name)}</b><span class="badge">${d.n}, ${d.t}, ${d.xp.toLocaleString()} xp</span><span>${fq(c)}</span>${c.prog&&k!=='done'?`<span class="pbar"><i style="width:${c.prog}%"></i></span><span>${c.prog}% done</span>`:''}<span class="grow"></span>${k==='over'?`<b class="bad">! MISSED, ${plural(m,'day')} late, ${Math.round(mult(m)*100)}% xp. Do first</b>`:''}${k==='done'?'<span class="good">&#10003; Done</span>':isT?`<button class="btn" data-done="${c.id}">Done</button>${progSel(c)}<button class="btn" data-push="${c.id}">Push</button>${c.once?'':`<button class="btn" data-skip="${c.id}">Skip</button>`}`:''}</div>`};
+  const sec=(t,a,k)=>a.length?`<h3>${t}</h3>`+a.map(c=>row(c,k)).join(''):'';
+  const todo=ov.concat(due),pts=todo.reduce((a,c)=>a+D[c.diff].xp,0);
+  const kd=c=>over(c)&&isT?'over':'due',tds=[...todo].sort((x,y)=>base(x)-base(y)||x.diff-y.diff);
+  const quest=isT&&tds.length?"<h3>Today's quest</h3>"+tds.slice(0,3).map(c=>row(c,kd(c))).join('')+(tds.length>3?`<details><summary>${plural(tds.length-3,'more chore')} due, tap to show</summary>${tds.slice(3).map(c=>row(c,kd(c))).join('')}</details>`:''):'';
+  const label=fmt(n,{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  return calNav(label)+`<div class="panel sect">${todo.length?`<div>${plural(todo.length,'chore')} to do, ${pts.toLocaleString()} xp up for grabs</div>`:''}${isT?quest:sec('Due',due,'due')}${sec('Completed',dd,'done')}${pt.length?'<h3>Progress made</h3>'+pt.map(x=>`<div class="dayrow" style="--c:${D[x[0].diff].c}"><span class="sym">${D[x[0].diff].s}</span><b>${esc(x[0].name)}</b><span class="good">+${x[1]}% progress</span><span class="badge">+${Math.round(D[x[0].diff].xp*x[1]/100).toLocaleString()} xp</span></div>`).join(''):''}${todo.length+dd.length+pt.length?'':'<div class="empty">Nothing scheduled or logged for this day.</div>'}</div>`+legend();
+}
+function renderSkill(){
+  const L=lvl(xp),cap=L>=99,lo=XT[L],hi=cap?lo:XT[L+1];
+  const pct=cap?100:Math.round((xp-lo)/(hi-lo)*100),miss=chores.filter(over).length;
+  $('#skill').innerHTML=`<div class="skill"><span class="lvl">${L}<small style="font-size:22px">/99</small></span><div class="grow"><div><b>Housekeeping</b> &nbsp; ${xp.toLocaleString()} xp${cap?'':' &nbsp; (next level in '+(hi-xp).toLocaleString()+' xp)'}</div><div class="xpbar"><i style="width:${pct}%"></i></div></div>${miss?`<b class="bad">! ${plural(miss,'missed chore')}</b>`:''}<div style="width:100%">${streakLine()}</div></div>`;
+}
+function card(c){
+  const b=base(c),l=last(c),d=D[c.diff];
+  const st=isDone(c)?`<span class="good">&#10003; Completed</span>`:b<T?`<span class="bad">! MISSED, ${plural(T-b,'day')} late, ${Math.round(mult(T-b)*100)}% xp</span>`:b===T?`<span class="bad">Due today</span>`:`<span class="good">Due in ${plural(b-T,'day')} (${fmt(b,{month:'short',day:'numeric'})})</span>`;
+  const ev=(c.part||[]).map(x=>[x.d,'+'+x.p+'%']).concat(c.log.map(n=>[n,'Completed']),(c.sk||[]).map(n=>[n,'Skipped'])).sort((x,y)=>y[0]-x[0]).slice(0,12),hist=ev.map(x=>fmt(x[0])+': '+x[1]).join('<br>');
+  return `<div class="card"><div class="top"><span class="name">${esc(c.name)}</span><span class="badge" style="--c:${d.c}">${d.s} ${d.n}, ${d.t}, ${d.xp.toLocaleString()} xp</span><span>${fq(c)}</span><span class="grow"></span>${st}</div>
+  <div class="meta"><span>Added: ${fmt(c.added)} (${ago(c.added)})</span><span>Last done: ${l==null?'Never':fmt(l)+' ('+ago(l)+')'}</span><span>Times done: ${c.log.length}</span></div>
+  ${ev.length?`<details><summary>History</summary>${hist}</details>`:''}
+  ${c.prog?`<div class="bar"><span>Progress: ${c.prog}%</span><span class="pbar"><i style="width:${c.prog}%"></i></span></div>`:''}<div class="bar">${isDone(c)?'':`<button class="btn" data-done="${c.id}">Done today</button>${progSel(c)}`}${!isDone(c)&&b<=T?`<button class="btn" data-push="${c.id}">Push</button>`:''}${isDone(c)||c.once?'':`<button class="btn" data-skip="${c.id}">Skip</button>`}${gcal(c)}<button class="btn" data-del="${c.id}">${arm===c.id?'Really delete?':'Delete'}</button></div></div>`;
+}
+function listView(){
+  if(!chores.length)return '<div class="panel empty">No chores yet. Add your first one below.</div>';
+  const s=[...chores].sort((a,b)=>key(a)-key(b));
+  return `<div class="panel"><h2>All chores</h2>${s.map(card).join('')}</div>`;
+}
+function refreshPick(){
+  const s=[...chores].filter(c=>!isDone(c)).sort((a,b)=>base(a)-base(b));
+  const opt=c=>`<option value="${c.id}">${esc(c.name)}</option>`;
+  const due=s.filter(c=>base(c)<=T),rest=s.filter(c=>base(c)>T);
+  $('#pick').innerHTML='<option value="">Select a chore...</option>'+
+    (due.length?`<optgroup label="Due or overdue">${due.map(opt).join('')}</optgroup>`:'')+
+    (rest.length?`<optgroup label="Not due yet">${rest.map(opt).join('')}</optgroup>`:'');
+}
+function render(){
+  $('#main').innerHTML=view==='day'?dayView():view==='week'?weekView():view==='month'?monthView():listView();
+  document.querySelectorAll('[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===view));
+  $('#addp').hidden=view!=='list';
+  renderSkill();
+  renderPick();
+  refreshPick();
+}
+
+$('#fd').innerHTML=D.map((d,i)=>`<option value="${i}">${d.n} (${d.t}, ${d.xp.toLocaleString()} xp)</option>`).join('');
+$('#ff').innerHTML=F.map(f=>`<option value="${f[0]}">${f[1]}</option>`).join('')+'<option value="c">Custom...</option><option value="once">One-time (pick a due date)</option>';
+$('#fo').value=ymd(T+1);$('#fo').min=ymd(T);
+$('#ff').value='7';
+$('#ppct').innerHTML=[100,90,80,70,60,50,40,30,20,10].map(q=>`<option value="${q}">${q}%</option>`).join('');
+$('#ff').addEventListener('change',e=>{$('#fcw').hidden=e.target.value!=='c';$('#fow').hidden=e.target.value!=='once'});
+const td=dt(T),ds=td.getFullYear()+'-'+String(td.getMonth()+1).padStart(2,'0')+'-'+String(td.getDate()).padStart(2,'0');
+$('#pdate').value=ds;$('#pdate').max=ds;
+$('#pick').addEventListener('change',e=>{if(e.target.value)addProgress(e.target.value,pickedDay(),Number($('#ppct').value))});
+document.addEventListener('change',e=>{const q=e.target;if(q.dataset&&q.dataset.prog&&q.value)addProgress(q.dataset.prog,T,Number(q.value))});
+
+$('#fadd').addEventListener('click',()=>{
+  const name=$('#fn').value.trim();
+  if(!name){$('#fn').focus();return}
+  const o=$('#ff').value==='once';
+  let f=$('#ff').value==='c'?Math.round(Number($('#fc').value)):Number($('#ff').value);
+  if(!(f>=1))f=7;
+  let due=T;if(o){const v=$('#fo').value;if(!v){$('#fo').focus();return}const q=v.split('-').map(Number);due=dn(new Date(q[0],q[1]-1,q[2]))}
+  snapshot();
+  const nc={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name,diff:Number($('#fd').value),freq:o?1:f,added:T,log:[]};
+  if(o){nc.once=true;nc.due=due}
+  chores.push(nc);
+  $('#fn').value='';save();render();
+});
+
+document.addEventListener('click',e=>{
+  if(e.target.closest('#lvlup')){$('#lvlup').hidden=true;return}
+  const dc=e.target.closest('.day[data-d]');
+  if(dc){cur=Number(dc.dataset.d);view='day';render();window.scrollTo(0,0);return}
+  const b=e.target.closest('button');if(!b)return;
+  const d=b.dataset;
+  if(b.id==='pickbtn'||b.id==='pickbtn2'){pickMe();return}
+  if(b.id==='undobtn'){undo();return}
+  if(b.id==='bkx'){saveFile('chore-quest-backup.json',JSON.stringify({v:1,chores,xp,act}));return}
+  if(b.id==='bkr'){restore($('#bkt').value);return}
+  if(d.v){view=d.v;arm=null;render()}
+  else if(d.nav!==undefined){
+    const k=Number(d.nav);
+    if(k===0)cur=T;
+    else if(view==='day')cur+=k;
+    else if(view==='week')cur+=7*k;
+    else{const c=dt(cur);cur=dn(new Date(c.getFullYear(),c.getMonth()+k,1))}
+    render();
+  }
+  else if(d.done){markDone(d.done,T)}
+  else if(d.p10){addProgress(d.p10,T,10)}
+  else if(d.push){pushChore(d.push)}
+  else if(d.skip){skipChore(d.skip)}
+  else if(d.del){
+    if(arm===d.del){snapshot();chores=chores.filter(c=>c.id!==d.del);arm=null;save()}else arm=d.del;
+    render();
+  }
+});
+$('#imp').addEventListener('change',e=>{const f=e.target.files[0];if(f)f.text().then(restore);e.target.value=''});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.closest){const dc=e.target.closest('.day[data-d]');if(dc)dc.click()}});
+render();
+})();
+</script></body></html>
